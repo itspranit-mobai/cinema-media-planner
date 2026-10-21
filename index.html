@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cinema Media Planner v2</title>
+<style>
+:root{--bg:#15120f;--surf:#201b17;--line:#3b3229;--ink:#f2e8d5;--mute:#a39582;--gold:#e9a23b;--red:#c4553f;--teal:#6e9c92;--sand:#8a6e4b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:1140px;margin:0 auto;padding:32px 20px 60px}
+h1{font:400 44px/1.05 Georgia,"Iowan Old Style",serif;margin:0 0 8px}
+h2{font:400 26px Georgia,"Iowan Old Style",serif;margin:44px 0 6px}
+.sub{color:var(--mute);max-width:700px;margin:0 0 12px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:4px;padding:18px;overflow-x:auto}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+input,select{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:7px 9px;font:inherit}
+input:focus,select:focus,button:focus{outline:2px solid var(--gold);outline-offset:1px}
+input.sm{width:80px;padding:5px 7px}
+input.tiny{width:70px;padding:5px 7px}
+button{background:var(--gold);color:#15120f;border:0;border-radius:3px;padding:9px 14px;font:bold 14px inherit;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.big{font:400 30px Georgia,serif;margin-top:4px}
+.strip{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-top:16px}
+.frame{border:1px solid var(--line);padding:10px 6px;min-height:100px;background:var(--bg);position:relative;border-top-width:4px}
+.frame b{display:block;font-size:12px;color:var(--mute);font-weight:normal}
+.frame .ph{margin-top:12px;font-size:12px;font-weight:bold}
+.frame.rel{border-color:var(--gold)}
+.frame.rel::before{content:"RELEASE";position:absolute;top:-10px;left:6px;background:var(--gold);color:#15120f;font-size:10px;padding:1px 5px}
+.p0{border-top-color:var(--gold)} .p1{border-top-color:var(--teal)} .p2{border-top-color:var(--sand)} .p3{border-top-color:var(--red)}
+.now{outline:2px solid var(--ink);outline-offset:2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:normal;font-size:13px}
+td.r,th.r{text-align:right}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border:1px solid var(--line);color:var(--mute);border-radius:2px}
+.tag.paid{color:var(--gold);border-color:var(--gold)} .tag.org{color:var(--teal);border-color:var(--teal)}
+.tag.partner{color:var(--sand);border-color:var(--sand)} .tag.offline{color:var(--red);border-color:var(--red)}
+.good{color:var(--teal)} .bad{color:var(--red)}
+.verdict{font-size:17px;margin:14px 0 0;font-weight:bold}
+.note{color:var(--mute);font-size:13px;margin:10px 0 0}
+.phasehead{font-size:20px;margin:0 0 4px}
+.totals td{font-weight:bold;border-top:2px solid var(--line)}
+.rec{border-left:3px solid var(--gold);padding:8px 14px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Cinema Media Planner v2</h1>
+<p class="sub">Plan each release, split the budget across paid and organic channels, target segments, test prices, and track weekly results. The planner tells you when to promote, what to promote, where to spend, and whether it pays.</p>
+
+<h2>1. Release cycle</h2>
+<p class="sub">Each film gets 3 months of promotion after release. Month 4 is the teaser for the next film.</p>
+<div class="card">
+  <div class="grid g2">
+    <div><label for="release">First release month</label><input type="month" id="release" value="2026-11" oninput="render()"></div>
+    <div><label for="plan">Plan month</label><input type="month" id="plan" value="2026-11" oninput="render()"></div>
+  </div>
+  <div class="strip" id="strip"></div>
+</div>
+
+<h2>2. Business numbers</h2>
+<p class="sub">Starting guesses, not market data. Replace them with your Meta Ads Manager and Play Console results after about two weeks.</p>
+<div class="card">
+  <div class="grid g4">
+    <div><label for="budget">Monthly promo budget (₹)</label><input type="number" id="budget" value="50000" oninput="render()"></div>
+    <div><label for="pMovie">Movie rental (₹)</label><input type="number" id="pMovie" value="25" oninput="render()"></div>
+    <div><label for="pExtra">20-min extra (₹)</label><input type="number" id="pExtra" value="12" oninput="render()"></div>
+    <div><label for="mix">Buyers taking the movie (%)</label><input type="number" id="mix" value="60" oninput="render()"></div>
+    <div><label for="fee">Store and payment fee (%)</label><input type="number" id="fee" value="15" oninput="render()"></div>
+    <div><label for="maxShare">Share of net revenue for acquisition (%)</label><input type="number" id="maxShare" value="50" oninput="render()"></div>
+    <div><label for="ctrTarget">Target click-through (%)</label><input type="number" step="0.1" id="ctrTarget" value="1.0" oninput="render()"></div>
+    <div><label>Current phase</label><div id="phaseLabel" style="padding-top:6px;font-weight:bold"></div></div>
+  </div>
+</div>
+
+<h2>3. Channel plan</h2>
+<p class="sub">Paid rows take a share of this month's budget. Organic rows cost nothing in media spend, so you enter the views you expect from them. Shares across paid and partner rows must total 100%.</p>
+<div class="card">
+  <table>
+    <thead><tr>
+      <th>Channel</th><th>Type</th><th class="r">Share %</th><th class="r">CPM ₹</th><th class="r">Organic views</th><th class="r">CTR %</th><th class="r">Rental %</th>
+      <th class="r">Spend</th><th class="r">Rentals</th><th class="r">Cost per rental</th>
+    </tr></thead>
+    <tbody id="chBody"></tbody>
+    <tbody class="totals" id="chTotals"></tbody>
+  </table>
+  <p class="note" id="shareCheck"></p>
+</div>
+
+<h2>4. This month's plan</h2>
+<div class="card">
+  <p class="phasehead" id="phaseName"></p>
+  <p class="sub" id="phaseDesc" style="margin:0 0 14px"></p>
+  <div class="grid g2">
+    <div><label>Paid spend this month</label><div class="big" id="spendBig"></div></div>
+    <div><label>Creative to run</label><div id="creative" style="margin-top:8px;font-weight:bold"></div></div>
+    <div><label>City split</label><div id="cityNote" style="margin-top:8px"></div></div>
+  </div>
+</div>
+
+<h2>5. Economics and price test</h2>
+<div class="card">
+  <table>
+    <tbody id="funnel"></tbody>
+  </table>
+  <p class="verdict" id="verdict"></p>
+  <p class="note" id="breakeven"></p>
+  <h3 style="font-weight:normal;color:var(--mute);margin:22px 0 6px;font-size:14px">Price test at this month's paid click cost</h3>
+  <table>
+    <thead><tr><th>Offer</th><th class="r">Price ₹</th><th class="r">Net after fees ₹</th><th class="r">Max cost per buyer ₹</th><th class="r">Buyer rate needed</th></tr></thead>
+    <tbody id="priceTest"></tbody>
+  </table>
+  <p class="note">Buyer rate needed = the share of paid clicks that must buy to break even. If it's above what you see in the tracker, that price can't carry paid ads yet.</p>
+</div>
+
+<h2>6. Audience segments</h2>
+<p class="sub">Who you're targeting, what to show them, and where. Shares must total 100%.</p>
+<div class="card">
+  <table>
+    <thead><tr><th>Segment</th><th>Who they are</th><th>Message that hooks them</th><th>Best channels</th><th class="r">Share %</th><th class="r">Spend</th></tr></thead>
+    <tbody id="segBody"></tbody>
+  </table>
+  <p class="note" id="segCheck"></p>
+</div>
+
+<h2>7. Promotion options beyond Facebook</h2>
+<p class="sub">Everything you can use, grouped by type. Use the cost and effort columns to pick what fits this phase.</p>
+<div class="card">
+  <table>
+    <thead><tr><th>Group</th><th>Option</th><th>Cost</th><th>Effort</th><th>Best for</th></tr></thead>
+    <tbody id="options"></tbody>
+  </table>
+</div>
+
+<h2>8. Weekly tracker</h2>
+<p class="sub">Enter real numbers each week. The planner reads the latest week and tells you what to do next. Export to CSV to keep a full record.</p>
+<div class="card">
+  <table>
+    <thead><tr><th>Week</th><th class="r">Paid spend ₹</th><th class="r">Impressions</th><th class="r">Clicks</th><th class="r">Rentals</th><th class="r">Gross revenue ₹</th><th class="r">CTR</th><th class="r">Cost per rental</th><th class="r">Return on spend</th></tr></thead>
+    <tbody id="trkBody"></tbody>
+  </table>
+  <div class="rec" id="trackRec"></div>
+  <p style="margin-top:14px"><button onclick="exportCsv()">Export tracker CSV</button> <button class="ghost" onclick="clearTracker()">Clear tracker</button></p>
+</div>
+
+<h2>9. Boost check</h2>
+<p class="sub">Enter a post's 48-hour numbers from Facebook or Instagram Insights.</p>
+<div class="card">
+  <div class="grid g4">
+    <div><label for="bImpr">Impressions</label><input type="number" id="bImpr" value="8000" oninput="boostRender()"></div>
+    <div><label for="b3s">3-second views</label><input type="number" id="b3s" value="1200" oninput="boostRender()"></div>
+    <div><label for="b50">Watched 50%+</label><input type="number" id="b50" value="250" oninput="boostRender()"></div>
+    <div><label for="bClicks">Link clicks</label><input type="number" id="bClicks" value="110" oninput="boostRender()"></div>
+  </div>
+  <p class="verdict" id="boostVerdict"></p>
+  <p class="note" id="boostDetail"></p>
+</div>
+
+<h2>10. What to promote, by phase</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Phase</th><th>Format</th><th>Length</th><th>Job of the ad</th></tr></thead>
+    <tbody id="creatives"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const rs = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const nf = n => Math.round(n).toLocaleString('en-IN');
+const val = id => parseFloat($(id).value) || 0;
+const toIdx = s => { const [y, m] = s.split('-').map(Number); return y * 12 + (m - 1); };
+const monthLabel = m => new Date(Math.floor(m / 12), m % 12, 1).toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+const tagCls = t => ({ Paid: 'paid', Organic: 'org', Partner: 'partner', Offline: 'offline' }[t] || '');
+
+const PHASES = [
+  { name: 'Launch month', weight: 1.4, t23: 0.70,
+    desc: 'The film goes live. Spend hardest here for the first rentals and reviews. Tier 2-3 cities carry the volume.',
+    creative: 'Hook trailer (60s) and 30s vertical reel' },
+  { name: 'Sustain I', weight: 1.0, t23: 0.50,
+    desc: 'Keep the film in front of people. Rotate character cuts and the ₹12 twenty-minute preview.',
+    creative: 'Character spotlight and 20-min preview ad' },
+  { name: 'Sustain II', weight: 0.8, t23: 0.40,
+    desc: 'Pull back and let word of mouth carry it. Boost only posts that pass the boost check.',
+    creative: 'Viewer reactions and cinephile reviews' },
+  { name: 'Next film teaser', weight: 0.8, t23: 0.30,
+    desc: 'The film is in lull. Tease the next release and grow followers so the next launch starts warm.',
+    creative: '15s teaser: "Something is coming" with follow prompt' }
+];
+
+// [name, type, share%, CPM ₹, organic views, CTR%, rental%]
+const CHANNELS = [
+  ['Facebook feed and Reels', 'Paid', 30, 90, 0, 1.0, 3.0],
+  ['Instagram Reels ads', 'Paid', 20, 80, 0, 1.1, 3.0],
+  ['YouTube Shorts ads', 'Paid', 10, 45, 0, 0.6, 2.0],
+  ['Google Search ads ("AI movies")', 'Paid', 5, 350, 0, 5.0, 5.0],
+  ['Google Play app campaign', 'Paid', 5, 120, 0, 2.0, 8.0],
+  ['Moj, ShareChat, Josh (vernacular)', 'Paid', 5, 25, 0, 0.8, 2.5],
+  ['Cinephile and creator reviews', 'Partner', 25, 60, 0, 2.0, 4.0],
+  ['YouTube: trailer and free 5-min preview', 'Organic', 0, 0, 40000, 1.0, 1.5],
+  ['Instagram organic Reels', 'Organic', 0, 0, 20000, 1.5, 1.5],
+  ['WhatsApp channels and groups', 'Organic', 0, 0, 15000, 3.0, 2.0],
+  ['Telegram film communities', 'Organic', 0, 0, 10000, 3.0, 2.0],
+  ['Reddit, Letterboxd, Quora', 'Organic', 0, 0, 5000, 1.0, 2.0],
+  ['Play Store page (ASO, ratings)', 'Organic', 0, 0, 30000, 4.0, 6.0]
+];
+
+// [segment, who, message, channels, share%]
+const SEGMENTS = [
+  ['Cinephiles who pay for cinema', 'Watch films in theatres, pay for quality, follow critics', 'Cinema-grade, made-with-AI, watch it at home for ₹25', 'Creator reviews, Facebook, Instagram, YouTube', 25],
+  ['Tier 2-3 mass viewers', 'Mobile-first, Hindi and regional, price-sensitive', 'A full film for the price of a samosa', 'Moj, ShareChat, Josh, WhatsApp, Facebook', 20],
+  ['Micro-drama and short-series subscribers', 'Pay for episodic apps (Kuku, Reelshort-style), binge on phones', 'Episodic, cliffhanger, ₹12 to keep watching', 'YouTube Shorts, Instagram Reels, Telegram', 20],
+  ['Students and AI-curious young audiences', 'Early adopters, share clips, cost-sensitive', 'Watch the first AI movie made in India', 'Instagram, Reddit, Google Play, campus screenings', 15],
+  ['Genre fans (sci-fi, animation, romance)', 'Follow a genre and fan communities', 'Built for fans of this genre', 'Reddit, Letterboxd, YouTube reviews', 10],
+  ['Filmmakers and film-school community', 'Create content, spread word of mouth', 'See how it was made, make your own', 'Instagram, LinkedIn, film-school groups', 10]
+];
+
+// [group, option, cost, effort, best for]
+const OPTIONS = [
+  ['Owned and free', 'YouTube channel: full trailers, free 5-min preview, behind-the-scenes', 'Free', 'Medium', 'Long-term search traffic'],
+  ['Owned and free', 'Instagram and YouTube Shorts organic series (character clips)', 'Free', 'High', 'Building an audience'],
+  ['Owned and free', 'WhatsApp channel with release alerts and early-access codes', 'Free', 'Low', 'Repeat buyers'],
+  ['Owned and free', 'Telegram channel and film groups', 'Free', 'Low', 'Tier 2-3 reach'],
+  ['Owned and free', 'Play Store page: screenshots, trailer video, ratings prompts', 'Free', 'Medium', 'Installs and trust'],
+  ['Paid digital', 'Meta (Facebook and Instagram): feed, Reels, retargeting', 'Per impression', 'Medium', 'Scale and retargeting'],
+  ['Paid digital', 'YouTube ads: in-stream, Shorts', 'Per view', 'Medium', 'Trailer viewers'],
+  ['Paid digital', 'Google Search ads on "AI movies", "watch movies online"', 'Per click', 'Medium', 'Buyers already searching'],
+  ['Paid digital', 'Google Play app campaigns (installs and in-app purchases)', 'Per install', 'Medium', 'App installs'],
+  ['Paid digital', 'Moj, ShareChat, Josh in-app ads', 'Per impression', 'Low', 'Tier 2-3 mass reach'],
+  ['Creator and partner', 'Cinephile YouTubers and Instagram critics: paid reviews', 'Fee per video', 'Medium', 'Cinephile trust'],
+  ['Creator and partner', 'Micro-influencers in Tier 2-3 cities: reel shoutouts with a promo code', 'Fee or revenue share', 'Medium', 'Local word of mouth'],
+  ['Creator and partner', 'Affiliate code: creators earn a cut per rental', 'Revenue share only', 'High setup', 'Pay only for results'],
+  ['Offline and events', 'Campus and society screenings with a QR code to rent', 'Venue and travel', 'High', 'Students and early adopters'],
+  ['Offline and events', 'Film festivals, AI film showcases, meetups', 'Entry fees', 'High', 'Press and cinephile buzz'],
+  ['Offline and events', 'Local theatre partner screenings of the 20-min preview', 'Revenue share', 'High', 'Cinephiles who pay for cinema'],
+  ['Distribution partners', 'Telecom or DTH content bundles (pitch to Jio, Airtel, Tata Play)', 'Revenue share', 'High', 'Mass Tier 2-3 subscribers'],
+  ['Distribution partners', 'OTT aggregators and micro-drama platforms that take licensed films', 'Revenue share', 'High', 'Subscription audiences'],
+  ['Press and PR', 'Film blogs, entertainment press, AI-tech press', 'Free or paid placement', 'Medium', 'Launch credibility'],
+  ['Press and PR', 'Reviews on Letterboxd and IMDb-style communities', 'Free', 'Low', 'Trust and ratings']
+];
+
+const CREATIVES = [
+  ['Launch', 'Hook trailer', '60s', 'Make the first rental decision'],
+  ['Launch', 'Vertical reel', '30s', 'Stop the scroll on phones'],
+  ['Sustain', 'Character cut', '20-30s', 'Build attachment to one character'],
+  ['Sustain', '20-min preview', '20 min, ₹12', 'Turn a curious viewer into a buyer'],
+  ['Sustain', 'Viewer reaction', '15-30s', 'Social proof from real audiences'],
+  ['Next teaser', 'Teaser', '15s', 'Create anticipation and follows']
+];
+
+// Build static and input-driven tables
+function buildTables() {
+  $('chBody').innerHTML = CHANNELS.map((c, i) => `
+    <tr>
+      <td>${c[0]}</td>
+      <td><span class="tag ${tagCls(c[1])}">${c[1]}</span></td>
+      <td class="r"><input class="tiny" type="number" id="ch${i}-share" value="${c[2]}" oninput="render()"></td>
+      <td class="r"><input class="tiny" type="number" id="ch${i}-cpm" value="${c[3]}" oninput="render()"></td>
+      <td class="r"><input class="sm" type="number" id="ch${i}-org" value="${c[4]}" oninput="render()"></td>
+      <td class="r"><input class="tiny" type="number" step="0.1" id="ch${i}-ctr" value="${c[5]}" oninput="render()"></td>
+      <td class="r"><input class="tiny" type="number" step="0.1" id="ch${i}-rr" value="${c[6]}" oninput="render()"></td>
+      <td class="r" id="cs${i}"></td><td class="r" id="cr${i}"></td><td class="r" id="cc${i}"></td>
+    </tr>`).join('');
+
+  $('segBody').innerHTML = SEGMENTS.map((s, i) => `
+    <tr>
+      <td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td>
+      <td class="r"><input class="tiny" type="number" id="seg${i}-share" value="${s[4]}" oninput="render()"></td>
+      <td class="r" id="seg${i}-spend"></td>
+    </tr>`).join('');
+
+  $('options').innerHTML = OPTIONS.map(o => `<tr><td>${o[0]}</td><td>${o[1]}</td><td>${o[2]}</td><td>${o[3]}</td><td>${o[4]}</td></tr>`).join('');
+  $('creatives').innerHTML = CREATIVES.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+
+  const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+  $('trkBody').innerHTML = weeks.map((w, i) => `
+    <tr>
+      <td>${w}</td>
+      <td class="r"><input class="sm" type="number" id="wk${i}-spend" oninput="render()"></td>
+      <td class="r"><input class="sm" type="number" id="wk${i}-impr" oninput="render()"></td>
+      <td class="r"><input class="sm" type="number" id="wk${i}-clicks" oninput="render()"></td>
+      <td class="r"><input class="sm" type="number" id="wk${i}-rent" oninput="render()"></td>
+      <td class="r"><input class="sm" type="number" id="wk${i}-rev" oninput="render()"></td>
+      <td class="r" id="wk${i}-ctr"></td><td class="r" id="wk${i}-cpa"></td><td class="r" id="wk${i}-roas"></td>
+    </tr>`).join('');
+}
+
+function currentPhase() {
+  const rel = toIdx($('release').value), plan = toIdx($('plan').value);
+  return ((plan - rel) % 4 + 4) % 4;
+}
+
+function render() {
+  const rel = toIdx($('release').value), plan = toIdx($('plan').value);
+  const c = currentPhase(), ph = PHASES[c];
+  const budget = val('budget');
+  const paidBudget = budget * ph.weight;
+
+  // Release strip
+  let strip = '';
+  for (let i = 0; i < 12; i++) {
+    const m = plan + i, k = ((m - rel) % 4 + 4) % 4;
+    strip += `<div class="frame p${k}${k === 0 ? ' rel' : ''}${i === 0 ? ' now' : ''}"><b>${monthLabel(m)}</b><div class="ph">${PHASES[k].name}</div></div>`;
+  }
+  $('strip').innerHTML = strip;
+  $('phaseLabel').textContent = ph.name;
+  $('phaseName').textContent = ph.name;
+  $('phaseDesc').textContent = ph.desc;
+  $('spendBig').textContent = rs(paidBudget);
+  $('creative').textContent = ph.creative;
+  $('cityNote').textContent = `${Math.round(ph.t23 * 100)}% Tier 2-3, ${Math.round((1 - ph.t23) * 100)}% Tier 1`;
+
+  // Channels
+  let T = { spend: 0, impr: 0, clicks: 0, rent: 0, pSpend: 0, pClicks: 0, pRent: 0 };
+  let shareSum = 0;
+  CHANNELS.forEach((_, i) => {
+    const type = CHANNELS[i][1];
+    const share = val(`ch${i}-share`) / 100;
+    const cpm = val(`ch${i}-cpm`), org = val(`ch${i}-org`);
+    const ctr = val(`ch${i}-ctr`) / 100, rr = val(`ch${i}-rr`) / 100;
+    if (type !== 'Organic') shareSum += share * 100;
+    const spend = paidBudget * (type === 'Organic' ? 0 : share);
+    const impr = (cpm > 0 ? spend / cpm * 1000 : 0) + org;
+    const clicks = impr * ctr, rent = clicks * rr;
+    $(`cs${i}`).textContent = spend > 0 ? rs(spend) : '—';
+    $(`cr${i}`).textContent = rent.toFixed(1);
+    $(`cc${i}`).textContent = spend > 0 && rent > 0 ? rs(spend / rent) : (type === 'Organic' ? 'free' : '—');
+    T.spend += spend; T.impr += impr; T.clicks += clicks; T.rent += rent;
+    if (spend > 0) { T.pSpend += spend; T.pClicks += clicks; T.pRent += rent; }
+  });
+  const sc = $('shareCheck');
+  sc.textContent = `Paid and partner shares total ${Math.round(shareSum)}%${Math.round(shareSum) === 100 ? '' : ' (should be 100%)'}.`;
+  sc.className = 'note ' + (Math.round(shareSum) === 100 ? '' : 'bad');
+  $('chTotals').innerHTML = `<tr><td>Total</td><td></td><td></td><td></td><td class="r">${nf(T.impr)} impr.</td><td class="r">${nf(T.clicks)} clicks</td><td></td>
+    <td class="r">${rs(T.spend)}</td><td class="r">${T.rent.toFixed(1)}</td><td class="r">${T.rent > 0 && T.spend > 0 ? rs(T.spend / T.rent) : '—'}</td></tr>`;
+
+  // Economics
+  const mixv = val('mix') / 100, fee = val('fee') / 100;
+  const arpu = mixv * val('pMovie') + (1 - mixv) * val('pExtra');
+  const netPer = arpu * (1 - fee);
+  const maxCpa = netPer * val('maxShare') / 100;
+  const paidCpa = T.pRent > 0 ? T.pSpend / T.pRent : Infinity;
+  const cpc = T.pClicks > 0 ? T.pSpend / T.pClicks : Infinity;
+  const netTotal = T.rent * netPer;
+  const gross = T.rent * arpu;
+  const roas = T.spend > 0 ? (netTotal / T.spend) : 0;
+
+  $('funnel').innerHTML = [
+    ['Paid spend', rs(T.spend)],
+    ['Paid cost per click', isFinite(cpc) ? rs(cpc) : '—'],
+    ['Rentals, all channels (paid + organic)', T.rent.toFixed(1)],
+    ['Gross revenue', rs(gross)],
+    ['Net after fees', rs(netTotal)],
+    ['Return on paid spend', T.spend > 0 ? roas.toFixed(2) + 'x' : '—'],
+    ['Paid cost per rental', isFinite(paidCpa) ? rs(paidCpa) : '—'],
+    ['Max affordable cost per rental', rs(maxCpa)]
+  ].map(([k, v]) => `<tr><td>${k}</td><td class="r">${v}</td></tr>`).join('');
+
+  const ok = paidCpa <= maxCpa;
+  $('verdict').className = 'verdict ' + (T.spend === 0 ? '' : ok ? 'good' : 'bad');
+  $('verdict').textContent = T.spend === 0
+    ? 'No paid spend this month. Organic only.'
+    : ok ? 'Paid channels pay for themselves at these numbers.'
+         : 'Paid channels lose money at these numbers. Fix conversion or move spend to organic and partner channels.';
+  const needRate = maxCpa > 0 && isFinite(cpc) ? cpc / maxCpa : Infinity;
+  $('breakeven').textContent = isFinite(needRate)
+    ? `Break-even needs about ${(needRate * 100).toFixed(1)}% of paid clicks to buy. Your current paid rate is ${T.pClicks > 0 ? (T.pRent / T.pClicks * 100).toFixed(1) : '0'}%.`
+    : '';
+
+  // Price test
+  const offers = [
+    ['20-min extra', val('pExtra')], ['1h20 film', val('pMovie')],
+    ['Film plus extra bundle', val('pMovie') + val('pExtra')], ['Monthly pass (4 films)', 99]
+  ];
+  $('priceTest').innerHTML = offers.map(([n, p]) => {
+    const net = p * (1 - fee), mc = net * val('maxShare') / 100;
+    const need = mc > 0 && isFinite(cpc) ? cpc / mc : Infinity;
+    return `<tr><td>${n}</td><td class="r">${rs(p)}</td><td class="r">${rs(net)}</td><td class="r">${rs(mc)}</td><td class="r ${need > 0.05 ? 'bad' : 'good'}">${isFinite(need) ? (need * 100).toFixed(1) + '%' : '—'}</td></tr>`;
+  }).join('');
+
+  // Segments
+  let segShare = 0;
+  SEGMENTS.forEach((_, i) => {
+    const s = val(`seg${i}-share`);
+    segShare += s;
+    $(`seg${i}-spend`).textContent = rs(paidBudget * s / 100);
+  });
+  const segCheck = $('segCheck');
+  segCheck.textContent = `Segment shares total ${Math.round(segShare)}%${Math.round(segShare) === 100 ? '' : ' (should be 100%)'}.`;
+  segCheck.className = 'note ' + (Math.round(segShare) === 100 ? '' : 'bad');
+
+  // Tracker
+  let last = -1;
+  for (let i = 0; i < 4; i++) {
+    const sp = val(`wk${i}-spend`), im = val(`wk${i}-impr`), cl = val(`wk${i}-clicks`), rt = val(`wk${i}-rent`), rv = val(`wk${i}-rev`);
+    if (sp > 0) last = i;
+    $(`wk${i}-ctr`).textContent = im > 0 ? (cl / im * 100).toFixed(2) + '%' : '—';
+    $(`wk${i}-cpa`).textContent = rt > 0 ? rs(sp / rt) : '—';
+    $(`wk${i}-roas`).textContent = sp > 0 ? ((rv * (1 - fee)) / sp).toFixed(2) + 'x' : '—';
+  }
+  $('trackRec').innerHTML = recommendation(last);
+
+  boostRender(paidBudget);
+}
+
+function recommendation(i) {
+  if (i < 0) return 'Enter this week\'s paid spend and results to get a recommendation.';
+  const sp = val(`wk${i}-spend`), im = val(`wk${i}-impr`), cl = val(`wk${i}-clicks`), rt = val(`wk${i}-rent`), rv = val(`wk${i}-rev`);
+  const ctr = im > 0 ? cl / im : 0;
+  const cpa = rt > 0 ? sp / rt : Infinity;
+  const maxCpa = (val('mix') / 100 * val('pMovie') + (1 - val('mix') / 100) * val('pExtra')) * (1 - val('fee') / 100) * val('maxShare') / 100;
+  if (rt === 0 && cl > 0) return `Week ${i + 1}: people click but nobody rents. Test the landing page and the preview offer before spending more.`;
+  if (cpa <= maxCpa) return `Week ${i + 1}: paying for itself. Raise next week's budget by about 20% on the best-performing channel.`;
+  if (ctr < val('ctrTarget') / 100) return `Week ${i + 1}: click-through is below target. Change the hook or end card before spending more.`;
+  return `Week ${i + 1}: clicks are healthy but rentals are not. Hold spend flat, test a sharper offer, and check the landing page.`;
+}
+
+function boostRender(paidBudget) {
+  const impr = val('bImpr'), v3 = val('b3s'), h50 = val('b50'), clicks = val('bClicks');
+  const $v = $('boostVerdict'), $d = $('boostDetail');
+  if (v3 <= 0 || impr <= 0) { $v.className = 'verdict'; $v.textContent = 'Enter the post numbers to get a verdict.'; $d.textContent = ''; return; }
+  const hold = h50 / v3, ctr = clicks / impr;
+  $d.textContent = `Hold rate ${(hold * 100).toFixed(0)}% (of 3-second viewers, watched half). Click-through ${(ctr * 100).toFixed(2)}%.`;
+  if (hold < 0.15) {
+    $v.className = 'verdict bad'; $v.textContent = 'Do not boost. Re-cut the first 3 seconds; most viewers leave before the hook lands.';
+  } else if (ctr >= val('ctrTarget') / 100) {
+    const daily = Math.max(100, Math.round((paidBudget || 0) / 30 / 50) * 50);
+    $v.className = 'verdict good'; $v.textContent = `Boost for 3 days at about ${rs(daily)} a day.`;
+  } else {
+    $v.className = 'verdict'; $v.textContent = 'The hook works but the click does not. Test a sharper end card with a clear "Watch for ₹25" call at ₹100 a day for 3 days.';
+  }
+}
+
+function exportCsv() {
+  const rows = [['week', 'paid_spend', 'impressions', 'clicks', 'rentals', 'gross_revenue']];
+  for (let i = 0; i < 4; i++) {
+    rows.push([`week${i + 1}`, val(`wk${i}-spend`), val(`wk${i}-impr`), val(`wk${i}-clicks`), val(`wk${i}-rent`), val(`wk${i}-rev`)]);
+  }
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'cinema_tracker.csv';
+  a.click();
+}
+
+function clearTracker() {
+  for (let i = 0; i < 4; i++) ['spend', 'impr', 'clicks', 'rent', 'rev'].forEach(k => $(`wk${i}-${k}`).value = '');
+  render();
+}
+
+buildTables();
+render();
+</script>
+</body>
+</html>
